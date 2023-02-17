@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="5dp"
+    android:padding="10dp"
     tools:context=".MainActivity">
 
     <ScrollView
         android:id="@+id/scrollView"
         style="@android:style/Widget.DeviceDefault.ScrollView"
-        android:layout_width="383dp"
-        android:layout_height="337dp"
+        android:layout_width="349dp"
+        android:layout_height="327dp"
         android:layout_marginTop="244dp"
         android:background="#253F51B5"
         android:paddingLeft="5dp"

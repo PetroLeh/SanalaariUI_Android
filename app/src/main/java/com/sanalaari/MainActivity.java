@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
     Button searchButton;
 
     Sanalaari sanalaari;
+    HashMap<Integer, ArrayList<String>> result;
+
+    int maxLength;
+    private String letterSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<String> rawData = readFile("kotus-sanalista_v1.xml");
         sanalaari = new Sanalaari(rawData);
+        result = new HashMap<>();
 
         lengthBar = (SeekBar) findViewById(R.id.lengthBar);
         letterInput = (EditText) findViewById(R.id.letterInput);
@@ -43,45 +49,33 @@ public class MainActivity extends AppCompatActivity {
         resultView.setText("Sanalistan koko: " + sanalaari.size() + " sanaa");
         lengthBar.setEnabled(false);
 
+        setUpButtonAction();
+        setUpSeekBarAction();
+    }
+
+    private void setUpButtonAction() {
         searchButton.setOnClickListener(view -> {
-            String letterSet = letterInput.getText().toString();
+            letterSet = letterInput.getText().toString();
             if (letterSet.length() < 2) {
                 lengthBar.setEnabled(false);
                 resultView.setText("Aewan liian vähän kirjaimia");
 
             } else {
                 lengthBar.setEnabled(true);
-                lengthBar.setMax(letterSet.length());
-                int length = lengthBar.getProgress();
-                ArrayList<String> resultSet = sanalaari.getPlain(letterSet, length);
-                String result = "ei tuloksia";
-                if (resultSet.size() > 0) {
-                    result = "kirjaimista '" + letterSet + "' saa\n"
-                            + "muodostettua seuraavat\n"
-                            + length + "-kirjaimiset sanat (" + resultSet.size() + " kpl):\n\n"
-                            + toSingleString(resultSet);
-                }
-                resultView.setText(result);
+                searchWords();
+                showResults();
             }
         });
+    }
 
+    private void setUpSeekBarAction() {
         lengthBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int length, boolean b) {
                 if (length < 2)
                     length = 2;
                 seekBar.setProgress(length);
-
-                String letterSet = letterInput.getText().toString();
-                ArrayList<String> resultSet = sanalaari.getPlain(letterSet, length);
-                String result = "ei tuloksia";
-                if (resultSet.size() > 0) {
-                    result = "kirjaimista '" + letterSet + "' saa\n"
-                            + "muodostettua seuraavat\n"
-                            + length + "-kirjaimiset sanat (" + resultSet.size() + " kpl):\n\n"
-                            + toSingleString(resultSet);
-                }
-                resultView.setText(result);
+                showResults();
             }
 
             @Override
@@ -92,6 +86,33 @@ public class MainActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+    }
+
+    private void searchWords() {
+        maxLength = 2;
+        for (int l = 2; l <= letterSet.length(); l++) {
+            ArrayList<String> resultSet = sanalaari.getPlain(letterSet, l);
+            if (resultSet.size() > 0) {
+                maxLength = l;
+            }
+            result.put(l, resultSet);
+        }
+        lengthBar.setMax(maxLength);
+    }
+
+    private void showResults() {
+        int length = lengthBar.getProgress();
+        String resultString = "ei tuloksia";
+        ArrayList<String> words = result.getOrDefault(length, null);
+        if (words != null) {
+            if (words.size() > 0) {
+                resultString = "kirjaimista '" + letterSet + "' saa\n"
+                        + "muodostettua seuraavat\n"
+                        + length + "-kirjaimiset sanat (" + words.size() + " kpl):\n\n"
+                        + toSingleString(words);
+            }
+            resultView.setText(resultString);
+        }
     }
 
     private ArrayList<String> readFile(String fName) {

@@ -3,8 +3,10 @@ package com.sanalaari;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -101,18 +103,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showResults() {
-        int length = lengthBar.getProgress();
-        String resultString = "ei tuloksia";
-        ArrayList<String> words = result.getOrDefault(length, null);
-        if (words != null) {
-            if (words.size() > 0) {
-                resultString = "kirjaimista '" + letterSet + "' saa\n"
+        resultView.setText(getResultString());
+    }
+
+    private String getResultString() {
+        if (hasAnyResults()) {
+            int length = lengthBar.getProgress();
+            ArrayList<String> words = result.getOrDefault(length, null);
+            if (words != null && words.size() > 0)
+                return "kirjaimista '" + letterSet + "' saa\n"
                         + "muodostettua seuraavat\n"
                         + length + "-kirjaimiset sanat (" + words.size() + " kpl):\n\n"
                         + toSingleString(words);
-            }
-            resultView.setText(resultString);
+
+            // Haulla löytyy tuloksia, mutta ei valitun mittaisia sanoja
+            return "Ei tuloksia pituudella " + length + " kirjainta";
         }
+        lengthBar.setEnabled(false);
+        return "Ei tuloksia";
+    }
+
+    private boolean hasAnyResults() {
+        for (int length = 2; length <= letterSet.length(); length++) {
+            ArrayList<String> words = result.getOrDefault(length, null);
+            if (words != null && words.size() > 0)
+                return true;
+        }
+        return false;
     }
 
     private ArrayList<String> readFile(String fName) {

@@ -105,7 +105,8 @@
             android:inputType="text"
             android:keepScreenOn="true"
             android:selectAllOnFocus="true"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:imeOptions="actionDone"/>
     </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
